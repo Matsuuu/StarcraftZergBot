@@ -24,11 +24,13 @@ public class Bot extends S2Agent {
     private List<Point> expansionLocations;
     private Point2d firstBaseLocation;
     private List<Abilities> unitQueue;
+    private boolean allowMakingUnits;
 
     public Bot() {
         this.structureActions = new StructureActions();
         this.unitActions = new UnitActions();
         this.unitQueue = new ArrayList<>();
+        allowMakingUnits = true;
     }
 
     @Override
@@ -106,5 +108,13 @@ public class Bot extends S2Agent {
         for (int i = 0; i < multiplier; i++) {
             this.unitQueue.add(unitToBuild);
         }
+    }
+
+    public boolean isAllowMakingUnits() {
+        return allowMakingUnits;
+    }
+
+    public void setAllowMakingUnits(boolean allowMakingUnits) {
+        this.allowMakingUnits = allowMakingUnits;
     }
 }

@@ -4,6 +4,7 @@ import Zerg.Bot;
 import Zerg.Utility.NearestUtility;
 import Zerg.Utility.ZergPredicates;
 import Zerg.Utility.ZergUnitCollector;
+import Zerg.Utility.ZergUnitCounter;
 import com.github.ocraft.s2client.bot.gateway.ObservationInterface;
 import com.github.ocraft.s2client.bot.gateway.UnitInPool;
 import com.github.ocraft.s2client.protocol.data.Abilities;
@@ -73,5 +74,8 @@ public class Hatchery {
                 bot.actions().unitCommand(worker, Abilities.SMART, nearestMineralToNewBase, false);
             }
         }
+    }
+
+    public static void handleUnitCreated(Bot bot) {
     }
 }

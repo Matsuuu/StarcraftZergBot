@@ -3,6 +3,7 @@ package Zerg.Units;
 import Zerg.Bot;
 import Zerg.Structures.Builder;
 import Zerg.Utility.NearestUtility;
+import Zerg.Utility.ZergMineralCosts;
 import Zerg.Utility.ZergPredicates;
 import Zerg.Utility.ZergUnitCounter;
 import com.github.ocraft.s2client.bot.gateway.ObservationInterface;
@@ -15,8 +16,11 @@ import com.github.ocraft.s2client.protocol.unit.Alliance;
 import com.github.ocraft.s2client.protocol.unit.Unit;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class Drone {
+    private static boolean unitIsBecomingAHatchery = false;
+
     public static void handleIdle(Bot bot, Unit unit) {
         ObservationInterface observation = bot.observation();
         bot.actions().unitCommand(unit, Abilities.SMART, NearestUtility.findNearestMineralPatch(unit, observation), false);
@@ -25,25 +29,40 @@ public class Drone {
     public static void handleCreated(Bot bot, Unit unit) {
         ObservationInterface observation = bot.observation();
         int foodUsed = observation.getFoodUsed();
+        int hatcheryCount = ZergUnitCounter.getHatcheryCount(observation);
 
-        boolean expansionNeeded = handleExpansionNeed(bot, observation, unit);
-        if (!expansionNeeded && foodUsed >= 16) {
+        handleExpansionNeed(bot, observation, unit, foodUsed, hatcheryCount);
+        if (hatcheryCount >= 2 && foodUsed >= 16) {
             handleSpawningPoolNeed(bot, observation, unit);
         }
     }
 
-    private static boolean handleExpansionNeed(Bot bot, ObservationInterface observation, Unit unit) {
-        boolean expansionNeeded = false;
-        int droneCount = ZergUnitCounter.getDroneCount(observation);
-        int hatcheryCount = ZergUnitCounter.getHatcheryCount(observation);
-        System.out.println("Drone count: " + droneCount);
-        System.out.println("Hatchery count" + hatcheryCount);
-        if (droneCount > 16 && hatcheryCount < 2) {
-            System.out.println("I SHOULD BECOME A HATCHERY");
-            bot.actions().unitCommand(unit, Abilities.BUILD_HATCHERY, getNaturalExpansion(bot),false);
-            expansionNeeded = true;
+    private static void handleExpansionNeed(Bot bot, ObservationInterface observation, Unit unit, int foodUsed, int hatcheryCount) {
+        System.out.println("FOOD USED: " + foodUsed);
+        if (shouldNaturalBeTaken(observation)) {
+            unitIsBecomingAHatchery = true;
+            bot.setAllowMakingUnits(false);
+            System.out.println("I WILL BECOME A HATCH");
+            Point2d naturalExpansion = getNaturalExpansion(bot);
+            bot.actions().unitCommand(unit, Abilities.MOVE, naturalExpansion, false);
+            CompletableFuture.runAsync(() -> {
+                boolean hasBecomeAHatchery = false;
+                while (!hasBecomeAHatchery) {
+                    if (observation.getMinerals() >= ZergMineralCosts.ZERG_HATCHERY) {
+                        bot.actions().unitCommand(unit, Abilities.BUILD_HATCHERY, naturalExpansion, false);
+                        hasBecomeAHatchery = true;
+                    }
+                }
+                bot.setAllowMakingUnits(true);
+                unitIsBecomingAHatchery = false;
+            });
         }
-        return expansionNeeded;
+    }
+
+    private static boolean shouldNaturalBeTaken(ObservationInterface observation) {
+        return observation.getFoodUsed() == 17 &&
+                ZergUnitCounter.getHatcheryCount(observation) < 2 &&
+                !unitIsBecomingAHatchery;
     }
 
     private static void handleSpawningPoolNeed(Bot bot, ObservationInterface observation, Unit unit) {

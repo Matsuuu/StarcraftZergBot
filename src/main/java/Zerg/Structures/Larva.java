@@ -18,17 +18,21 @@ public class Larva {
 
     public static void handleIdle(Bot bot, Unit unit) {
         ObservationInterface observation = bot.observation();
-
-        int foodCap = observation.getFoodCap();
         int foodUsed = observation.getFoodUsed();
         int hatcheryCount = ZergUnitCounter.getHatcheryCount(observation);
+
+        if(!bot.isAllowMakingUnits()) {
+            return;
+        }
+
+        int foodCap = observation.getFoodCap();
 
         if (bot.getUnitQueue().size() > 0) {
             doQueuedUnitTrainings(bot, unit);
             return;
         }
         checkOverlordNeed(bot, unit, foodCap, foodUsed, observation);
-        if (foodUsed > foodCap - 2) {
+        if (foodUsed > foodCap - 2 && !isOverlordMorphingFromEgg(observation)) {
             return;
         }
         checkDroneNeed(bot, unit, hatcheryCount, observation);

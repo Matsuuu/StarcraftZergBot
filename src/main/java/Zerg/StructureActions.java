@@ -45,7 +45,8 @@ public class StructureActions {
     public void handleUnitCreated(Bot bot, Unit unit, Units unitType) {
         switch (unitType) {
             default:
-
+            case ZERG_HATCHERY:
+                Hatchery.handleUnitCreated(bot);
                 break;
         }
     }
