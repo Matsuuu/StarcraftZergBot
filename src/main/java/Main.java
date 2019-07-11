@@ -8,6 +8,7 @@ public class Main {
     public static void main(String[] args) {
         Bot bot = new Bot();
         S2Coordinator s2Coordinator = S2Coordinator.setup()
+                //.setRealtime(true)
                 .loadSettings(args)
                 .setParticipants(
                         S2Coordinator.createParticipant(bot.race, bot),

@@ -68,7 +68,10 @@ public class Hatchery {
     private static void moveWorkerToUnSaturatedBase(Bot bot, Unit worker) {
         Unit nearestBase = NearestUtility.getNearestUnit(worker, bot.observation(), ZergUnitCollector.getAllUnSaturatedBases(bot));
         if (nearestBase != null) {
-            bot.actions().unitCommand(worker, Abilities.SMART, nearestBase, false);
+            Unit nearestMineralToNewBase = NearestUtility.findNearestMineralPatch(nearestBase, bot.observation());
+            if (nearestMineralToNewBase != null) {
+                bot.actions().unitCommand(worker, Abilities.SMART, nearestMineralToNewBase, false);
+            }
         }
     }
 }
