@@ -12,7 +12,7 @@ public class Main {
                 .loadSettings(args)
                 .setParticipants(
                         S2Coordinator.createParticipant(bot.race, bot),
-                        S2Coordinator.createComputer(Race.TERRAN, Difficulty.VERY_EASY))
+                        S2Coordinator.createComputer(Race.TERRAN, Difficulty.MEDIUM))
                 .launchStarcraft()
                 .startGame(BattlenetMap.of("Cloud Kingdom LE"));
         while(s2Coordinator.update()) {

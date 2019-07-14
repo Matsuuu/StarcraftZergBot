@@ -1,5 +1,6 @@
 package Zerg;
 
+import Zerg.Structures.Extractor;
 import Zerg.Structures.Hatchery;
 import Zerg.Structures.Larva;
 import Zerg.Structures.SpawningPool;
@@ -66,6 +67,9 @@ public class StructureActions {
                 break;
             case ZERG_SPAWNING_POOL:
                 SpawningPool.handleUnitCreated(bot, unit);
+                break;
+            case ZERG_EXTRACTOR:
+                Extractor.saturateGas(bot, unit);
                 break;
         }
     }

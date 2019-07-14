@@ -2,6 +2,7 @@ package Zerg.Structures;
 
 import Zerg.Bot;
 import Zerg.Utility.ZergPredicates;
+import Zerg.Utility.ZergUnitCollector;
 import Zerg.Utility.ZergUnitCounter;
 import com.github.ocraft.s2client.bot.gateway.ObservationInterface;
 import com.github.ocraft.s2client.bot.gateway.UnitInPool;
@@ -32,10 +33,12 @@ public class Larva {
             return;
         }
         checkOverlordNeed(bot, unit, foodCap, foodUsed, observation);
-        if (foodUsed > foodCap - 2 && !isOverlordMorphingFromEgg(observation)) {
-            return;
-        }
         checkDroneNeed(bot, unit, hatcheryCount, observation);
+        doAttackingUnits(bot, unit, observation);
+    }
+
+    private static boolean aboutToGetSupplyCapped(int foodCap, int foodUsed, int hatcheryCount) {
+        return foodUsed >= foodCap - (2 * hatcheryCount);
     }
 
     private static void doQueuedUnitTrainings(Bot bot, Unit unit) {
@@ -49,18 +52,50 @@ public class Larva {
     }
 
     private static void checkOverlordNeed(Bot bot, Unit unit, int foodCap, int foodUsed, ObservationInterface observation) {
-        if (foodUsed >= foodCap - 2 && !isOverlordMorphingFromEgg(observation)) {
+        int hatcheryCount = ZergUnitCounter.getHatcheryCount(observation);
+        if (aboutToGetSupplyCapped(foodCap, foodUsed, hatcheryCount) && !isOverlordMorphingFromEgg(observation)) {
+            if (hatcheryCount > 1) {
+                bot.addToUnitQueue(Abilities.TRAIN_OVERLORD, hatcheryCount - 1);
+            }
             bot.actions().unitCommand(unit, Abilities.TRAIN_OVERLORD, false);
         }
     }
 
     private static void checkDroneNeed(Bot bot, Unit unit, int hatcheryCount, ObservationInterface observation) {
-        int droneCount = ZergUnitCounter.getDroneCount(observation);
-        bot.actions().unitCommand(unit, Abilities.TRAIN_DRONE, false);
+        int droneCount = observation.getFoodWorkers();
+        if (getMineralGatherersNeededCount(bot) > 0) {
+            bot.actions().unitCommand(unit, Abilities.TRAIN_DRONE, false);
+        }
+    }
+
+    private static int getMineralGatherersNeededCount(Bot bot) {
+        List<Unit> allBases = ZergUnitCollector.getAllBases(bot);
+        int gatherersNeeded = 0;
+        for (Unit base : allBases) {
+            gatherersNeeded += base.getIdealHarvesters().get() - base.getAssignedHarvesters().get();
+        }
+        return gatherersNeeded;
     }
 
     private static boolean isOverlordMorphingFromEgg(ObservationInterface observation) {
         List<UnitInPool> units = observation.getUnits(Alliance.SELF, ZergPredicates.isEgg());
         return units.stream().anyMatch(unit -> unit.unit().getOrders().get(0).getAbility().equals(Abilities.TRAIN_OVERLORD));
+    }
+
+    private static void doAttackingUnits(Bot bot, Unit unit, ObservationInterface observation) {
+        if (ZergUnitCounter.getRoachWarrenCount(observation) > 0) {
+            doRoaches(bot, unit);
+        }
+        if (ZergUnitCounter.getSpawningPoolCount(observation) > 0) {
+            doLings(bot, unit);
+        }
+    }
+
+    private static void doLings(Bot bot, Unit unit) {
+        bot.actions().unitCommand(unit, Abilities.TRAIN_ZERGLING, false);
+    }
+
+    private static void doRoaches(Bot bot, Unit unit) {
+        bot.actions().unitCommand(unit, Abilities.TRAIN_ROACH, false);
     }
 }

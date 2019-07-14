@@ -1,6 +1,7 @@
 package Zerg.Utility;
 
 import com.github.ocraft.s2client.bot.gateway.UnitInPool;
+import com.github.ocraft.s2client.protocol.data.UnitType;
 import com.github.ocraft.s2client.protocol.data.Units;
 import static com.github.ocraft.s2client.protocol.data.Units.*;
 
@@ -24,6 +25,10 @@ public class ZergPredicates {
 
     public static Predicate<UnitInPool> isLarva() {
         return isUnitByType(ZERG_LARVA);
+    }
+
+    public static Predicate<UnitInPool> isOverLord() {
+        return isUnitByType(ZERG_OVERLORD);
     }
 
     public static Predicate<UnitInPool> isUnitByType(Units unitType) {

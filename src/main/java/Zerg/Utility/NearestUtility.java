@@ -30,7 +30,7 @@ public class NearestUtility {
         return target;
     }
 
-    public static Unit getNearestUnit(Unit unit, ObservationInterface observation, List<Unit> targetUnits) {
+    public static Unit getNearestUnit(Unit unit, List<Unit> targetUnits) {
         Point2d start = unit.getPosition().toPoint2d();
         Unit target = null;
         Double distance = Double.MAX_VALUE;
@@ -39,6 +39,19 @@ public class NearestUtility {
             if (d < distance) {
                 distance = d;
                 target = u;
+            }
+        }
+        return target;
+    }
+
+    public static Point2d getNearestPoint(Point2d point, List<Point2d> targetLocations) {
+        Point2d target = null;
+        Double distance = Double.MAX_VALUE;
+        for (Point2d loc : targetLocations) {
+            Double d = loc.distance(point);
+            if (d < distance) {
+                distance = d;
+                target = loc;
             }
         }
         return target;
